@@ -1,77 +1,88 @@
 # DBeaver MCP Server
 
-Eclipse/OSGi plugin chạy bên trong DBeaver và expose các connection đã cấu hình thành một
-MCP Streamable HTTP server cho AI agent.
+DBeaver MCP Server is an Eclipse/OSGi plugin that runs inside DBeaver and exposes
+configured database connections to AI agents through a local MCP Streamable HTTP
+server.
 
-Plugin dùng trực tiếp connection registry, driver và session của DBeaver. Nó không đọc hay
-giải mã `credentials-config.json`.
+The plugin uses DBeaver's connection registry, drivers, and live sessions
+directly. It does not read or decrypt `credentials-config.json`.
 
-## Cài từ GitHub Pages
+## Install From GitHub Pages
 
-1. Trong DBeaver mở **Help -> Install New Software...**.
-2. Thêm update site:
+1. In DBeaver, open **Help -> Install New Software...**.
+2. Add the following update site:
 
    ```text
    https://bachden.github.io/dbeaver-mcp-server/
    ```
 
-3. Chọn feature **DBeaver MCP Server** và hoàn tất wizard.
-4. Restart DBeaver khi được yêu cầu.
+3. Select **DBeaver MCP Server** and complete the installation wizard.
+4. Restart DBeaver when prompted.
 
-URL trên là p2 repository dành cho DBeaver. Trang gốc có thể không hiển thị HTML trong browser;
-DBeaver đọc trực tiếp `p2.index`, `artifacts.xml.xz` và `content.xml.xz`.
+This URL is a p2 repository for DBeaver. The root may not render an HTML page in
+a browser; DBeaver reads `p2.index`, `artifacts.xml.xz`, and
+`content.xml.xz` directly.
 
-## Human in the loop
+## Human In The Loop
 
-Plugin áp dụng nguyên tắc **what you see is what you get**:
+The plugin follows a **what you see is what you get** rule:
 
-- `list_connections` hiển thị cả connection đang mở và đang đóng, kèm trường `connected`.
-- `get_schema`, `run_query` và `execute_sql` chỉ dùng connection đang mở sẵn.
-- Plugin không tự động mở connection hoặc hiển thị credential prompt thay cho người dùng.
-- Nếu connection đang đóng, tool trả lỗi và yêu cầu mở thủ công trong DBeaver trước.
-- Tunnel, credential, MFA và quyết định kết nối luôn nằm trong UI của DBeaver.
+- `list_connections` lists both open and closed connections and includes a
+  `connected` field.
+- `get_schema`, `run_query`, and `execute_sql` only use connections that
+  are already open in DBeaver.
+- The plugin never opens a database connection automatically or presents a
+  credential prompt on the user's behalf.
+- When a connection is closed, the tool returns an error and asks the user to
+  open it manually in DBeaver first.
+- Tunnels, credentials, MFA, and the decision to connect remain under the
+  user's control in the DBeaver UI.
 
 ## Tools
 
-| Tool | Mô tả |
-|------|-------|
-| `list_connections` | Liệt kê connection, `connectionId`, endpoint và trạng thái `connected`. |
-| `get_schema` | Duyệt catalog/schema/table/column theo dotted `path`. |
-| `run_query` | Chạy SQL read-only như SELECT/WITH/SHOW/EXPLAIN/DESCRIBE. |
-| `execute_sql` | Chạy mọi SQL, gồm INSERT/UPDATE/DELETE/DDL. Có thể sửa hoặc xóa dữ liệu. |
+| Tool | Description |
+|------|-------------|
+| `list_connections` | Lists connections, their `connectionId`, endpoint, and `connected` state. |
+| `get_schema` | Browses catalogs, schemas, tables, and columns through a dotted `path`. |
+| `run_query` | Runs read-only SQL such as SELECT, WITH, SHOW, EXPLAIN, and DESCRIBE. |
+| `execute_sql` | Runs any SQL, including INSERT, UPDATE, DELETE, and DDL. It can modify or delete data. |
 
-Ba tool truy cập database đều từ chối connection đang đóng.
+All three database-access tools reject closed connections.
 
-## Server và UI
+## Server And UI
 
-Endpoint mặc định:
+The default endpoint is:
 
-```
+```text
 POST http://127.0.0.1:8722/mcp
 ```
 
-Menu **DBeaver MCP** cung cấp:
+The **DBeaver MCP** menu provides:
 
 - **Start Server**
 - **Stop Server**
 - **Connections...**
 - **Settings...**
 
-Status bar hiển thị trạng thái server. Trạng thái Start/Stop được lưu trong workspace:
-server đang dừng sẽ tiếp tục dừng sau khi khởi động lại DBeaver, và server đang bật sẽ tự bật lại.
-Bundle được activate qua lifecycle `org.jkiss.dbeaver.pluginService` sau khi DBeaver platform sẵn sàng;
-p2 không ép `markStarted`, tránh việc Equinox cố start một singleton module trùng lặp.
+The status bar displays the current server state. The Start/Stop choice is
+persisted in the workspace: a stopped server remains stopped after DBeaver
+restarts, while an enabled server starts again automatically.
 
-Preference page **Window → Preferences → DBeaver MCP Server** cho phép cấu hình host, port,
-bearer-token authentication và sinh config cho Claude Code, Claude Desktop, Codex CLI hoặc
-raw HTTP.
+The bundle is activated through the `org.jkiss.dbeaver.pluginService`
+lifecycle after the DBeaver platform is ready. The p2 metadata does not force
+`markStarted`, which avoids Equinox trying to start a duplicate singleton
+module.
 
-Server hỗ trợ `initialize`, `ping`, `tools/list`, `tools/call` và JSON-RPC batch.
-Server không cung cấp SSE stream.
+The **Window -> Preferences -> DBeaver MCP Server** page configures the listener
+host, port, bearer-token authentication, and client snippets for Claude Code,
+Claude Desktop, Codex CLI, or raw HTTP.
 
-## Project layout
+The server supports `initialize`, `ping`, `tools/list`, `tools/call`, and
+JSON-RPC batches. It does not provide an SSE stream.
 
-```
+## Project Layout
+
+```text
 dbeaver-mcp-server-plugin-parent
 ├── pom.xml
 ├── .github/workflows/
@@ -90,41 +101,43 @@ dbeaver-mcp-server-plugin-parent
     └── pom.xml
 ```
 
-Các module:
+The modules are:
 
-- `dbeaver-mcp-server-plugin-parent`: Maven/Tycho reactor.
-- `dbeaver-mcp-server-plugin`: OSGi bundle.
-- `dbeaver-mcp-server-plugin.feature`: installable p2 feature.
-- `dbeaver-mcp-server-plugin.updatesite`: p2 repository.
+- `dbeaver-mcp-server-plugin-parent`: the Maven/Tycho reactor.
+- `dbeaver-mcp-server-plugin`: the OSGi bundle.
+- `dbeaver-mcp-server-plugin.feature`: the installable p2 feature.
+- `dbeaver-mcp-server-plugin.updatesite`: the p2 repository.
 
-## Development setup
+## Development Setup
 
-Yêu cầu:
+Requirements:
 
-- DBeaver Ultimate 26.x tại
+- DBeaver Ultimate 26.x installed at
   `/Applications/DBeaverUltimate.app/Contents/Eclipse`.
 - Java 21.
-- Eclipse IDE có PDE và m2e.
-- Maven 3.9+.
+- Eclipse IDE with PDE and m2e.
+- Maven 3.9 or newer.
 
-Import root bằng **File → Import → Existing Maven Projects**. Eclipse sẽ nhận bốn project
-trong reactor.
+Import the repository root with **File -> Import -> Existing Maven Projects**.
+Eclipse will discover the four reactor projects.
 
-Mở `dbeaver-mcp-server-plugin/dbeaver.target`, chọn **Set as Active Target Platform** và
-chờ PDE resolve xong. File này dùng DBeaver Ultimate đang cài trên macOS; build CI dùng
-`dbeaver-ci.target` với các p2 repository công khai.
+Open `dbeaver-mcp-server-plugin/dbeaver.target`, select
+**Set as Active Target Platform**, and wait for PDE to finish resolving it. This
+target uses the DBeaver Ultimate installation on macOS. CI uses
+`dbeaver-ci.target` and public p2 repositories instead.
 
-## Build p2 update site
+## Build The p2 Update Site
 
-Từ thư mục root:
+Run from the repository root:
 
 ```bash
 mvn clean verify
 ```
 
-Tycho build bundle, feature và p2 repository. Repository hoàn chỉnh được copy tới:
+Tycho builds the bundle, feature, and p2 repository. The complete repository is
+copied to:
 
-```
+```text
 dist/
 ├── artifacts.jar
 ├── content.jar
@@ -133,7 +146,7 @@ dist/
 └── p2.index
 ```
 
-Build portable giống GitHub Actions:
+To run the portable build used by GitHub Actions:
 
 ```bash
 mvn --batch-mode --update-snapshots \
@@ -141,76 +154,81 @@ mvn --batch-mode --update-snapshots \
   clean verify
 ```
 
-`dist/` luôn là local update site ổn định; mỗi build `0.1.6.qualifier` tạo timestamp version
-mới để p2 nhận diện update.
+`dist/` is the stable local update-site location. Each build replaces the
+`0.1.6.qualifier` qualifier with a timestamp so p2 can identify a new update.
 
-## Cài từ local update site
+## Install From A Local Update Site
 
-1. Build project để tạo `dist/`.
-2. Trong DBeaver mở **Help → Install New Software...**.
-3. Chọn **Add... → Local...** và trỏ tới thư mục `dist/`.
-4. Đặt tên repository, ví dụ **Local DBeaver MCP**.
-5. Chọn feature **DBeaver MCP Server** và hoàn tất wizard.
-6. Restart DBeaver khi được yêu cầu.
+1. Build the project to create `dist/`.
+2. In DBeaver, open **Help -> Install New Software...**.
+3. Select **Add... -> Local...** and choose the `dist/` directory.
+4. Give the repository a name such as **Local DBeaver MCP**.
+5. Select **DBeaver MCP Server** and complete the wizard.
+6. Restart DBeaver when prompted.
 
-Không cần copy jar, sửa `bundles.info` hoặc dùng `dropins/`. Trong luồng cài đặt/cập nhật bình thường
-cũng không cần chạy `-clean`.
+There is no need to copy JARs, edit `bundles.info`, or use `dropins/`.
+Normal installation and update flows do not require `-clean`.
 
-## Update plugin
+## Update The Plugin
 
-1. Chạy lại:
+For local development:
+
+1. Rebuild the update site:
 
    ```bash
    mvn clean verify
    ```
 
-2. Trong DBeaver chọn **Help → Check for Updates**.
-3. Cài version mới và restart khi DBeaver yêu cầu.
+2. In DBeaver, select **Help -> Check for Updates**.
+3. Install the new version and restart DBeaver when prompted.
 
-Repository local giữ nguyên đường dẫn `dist/`, nên không cần Add lại sau mỗi build. Không uninstall rồi
-install lại đúng cùng một timestamp version; hãy tăng base version hoặc tạo qualifier mới và dùng
+The local repository remains at `dist/`, so it does not need to be added again
+after every build. Do not uninstall and reinstall the same timestamped version.
+Create a new qualifier or increment the base version, then use
 **Check for Updates**.
 
-Nếu Error Log báo `Another singleton bundle selected` sau khi đã reinstall cùng exact version,
-đóng DBeaver hoàn toàn và chạy một lần:
+If the Error Log reports `Another singleton bundle selected` after the exact
+same version has been reinstalled, close DBeaver completely and run it once
+with:
 
 ```bash
 /Applications/DBeaverUltimate.app/Contents/MacOS/dbeaver -clean
 ```
 
-Sau lần khởi động đó có thể mở DBeaver bình thường.
+DBeaver can be started normally after that one clean launch.
 
-## GitHub Actions và Pages
+## GitHub Actions And Pages
 
-Repository có hai workflow:
+The repository contains two workflows:
 
-- **Build and Publish DBeaver Update Site** chạy khi push vào `main`, build bằng
-  `dbeaver-ci.target` và deploy `dist/` lên GitHub Pages.
-- **Validate DBeaver Update Site** chạy cho pull request và upload `dist/` thành build artifact.
+- **Build and Publish DBeaver Update Site** runs on pushes to `main`, builds
+  with `dbeaver-ci.target`, and deploys `dist/` to GitHub Pages.
+- **Validate DBeaver Update Site** runs for pull requests and uploads `dist/`
+  as a build artifact.
 
-Update site được publish tại:
+The published update site is:
 
 ```text
 https://bachden.github.io/dbeaver-mcp-server/
 ```
 
-Không commit `target/` hoặc `dist/`; các artifact này được Maven tạo lại trong CI.
+Do not commit `target/` or `dist/`; Maven recreates these artifacts in CI.
 
-## Kết nối AI agent
+## Connect An AI Agent
 
-Ví dụ Claude Code khi auth tắt:
+Claude Code example with authentication disabled:
 
 ```bash
 claude mcp add --transport http dbeaver http://127.0.0.1:8722/mcp
 ```
 
-Khi auth bật, client phải gửi:
+When authentication is enabled, clients must send:
 
-```
+```text
 Authorization: Bearer <token>
 ```
 
-Ví dụ Codex CLI:
+Codex CLI example:
 
 ```toml
 [mcp_servers.dbeaver]
@@ -220,12 +238,14 @@ url = "http://127.0.0.1:8722/mcp"
 Authorization = "Bearer <token>"
 ```
 
-## Bảo mật
+## Security
 
-- Mặc định server bind `127.0.0.1`.
-- Khi bind LAN address hoặc `0.0.0.0`, nên bật bearer-token authentication.
-- `execute_sql` không giới hạn SQL và có thể sửa hoặc xóa dữ liệu.
-- Bộ lọc của `run_query` không thay thế database permission. Dùng read-only database user
-  nếu cần giới hạn chắc chắn.
-- Người dùng phải mở connection trong DBeaver trước khi agent truy cập database.
-- Có thể dừng server bất kỳ lúc nào từ menu hoặc status bar.
+- The server binds to `127.0.0.1` by default.
+- Enable bearer-token authentication when binding to a LAN address or
+  `0.0.0.0`.
+- `execute_sql` accepts unrestricted SQL and can modify or delete data.
+- The `run_query` filter is not a replacement for database permissions. Use a
+  read-only database account when a hard write restriction is required.
+- The user must open a connection in DBeaver before an agent can access that
+  database.
+- The server can be stopped at any time from the menu or status bar.
