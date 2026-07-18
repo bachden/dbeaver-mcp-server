@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <!-- Activate after DBeaver has initialized its platform and data source registries. -->
+   <extension point="org.jkiss.dbeaver.pluginService">
+      <service class="io.dbeaver.mcp.McpPluginService"/>
+   </extension>
+
+   <extension point="org.eclipse.ui.preferencePages">
+      <page id="io.dbeaver.mcp.preferencePage" name="DBeaver MCP Server"
+            class="io.dbeaver.mcp.ui.McpPreferencePage"/>
+   </extension>
+
+   <extension point="org.eclipse.ui.commands">
+      <category id="io.dbeaver.mcp.commandCategory" name="DBeaver MCP"/>
+      <command id="io.dbeaver.mcp.commands.startServer" name="Start MCP Server"
+            categoryId="io.dbeaver.mcp.commandCategory"/>
+      <command id="io.dbeaver.mcp.commands.stopServer" name="Stop MCP Server"
+            categoryId="io.dbeaver.mcp.commandCategory"/>
+      <command id="io.dbeaver.mcp.commands.openPreferences" name="MCP Server Settings..."
+            categoryId="io.dbeaver.mcp.commandCategory"/>
+      <command id="io.dbeaver.mcp.commands.showConnections" name="MCP Server Connections..."
+            categoryId="io.dbeaver.mcp.commandCategory"/>
+   </extension>
+
+   <extension point="org.eclipse.ui.handlers">
+      <handler commandId="io.dbeaver.mcp.commands.startServer" class="io.dbeaver.mcp.ui.StartServerHandler"/>
+      <handler commandId="io.dbeaver.mcp.commands.stopServer" class="io.dbeaver.mcp.ui.StopServerHandler"/>
+      <handler commandId="io.dbeaver.mcp.commands.openPreferences" class="io.dbeaver.mcp.ui.OpenPreferencesHandler"/>
+      <handler commandId="io.dbeaver.mcp.commands.showConnections" class="io.dbeaver.mcp.ui.ShowConnectionsHandler"/>
+   </extension>
+
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+         <menu id="io.dbeaver.mcp.menu" label="DBeaver MCP">
+            <command commandId="io.dbeaver.mcp.commands.startServer" label="Start Server"/>
+            <command commandId="io.dbeaver.mcp.commands.stopServer" label="Stop Server"/>
+            <separator name="io.dbeaver.mcp.menu.sep1" visible="true"/>
+            <command commandId="io.dbeaver.mcp.commands.showConnections" label="Connections..."/>
+            <command commandId="io.dbeaver.mcp.commands.openPreferences" label="Settings..."/>
+         </menu>
+      </menuContribution>
+   </extension>
+</plugin>

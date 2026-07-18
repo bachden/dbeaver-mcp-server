@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver MCP Server
+Bundle-SymbolicName: dbeaver-mcp-server-plugin;singleton:=true
+Bundle-Version: 0.1.6.qualifier
+Bundle-Vendor: Bach Nguyen
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Automatic-Module-Name: io.dbeaver.mcp
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: io.dbeaver.mcp.Activator
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.ui,
+ org.eclipse.jface,
+ org.eclipse.equinox.preferences,
+ org.eclipse.swt,
+ org.jkiss.dbeaver.model,
+ com.google.gson
+Import-Package: com.sun.net.httpserver

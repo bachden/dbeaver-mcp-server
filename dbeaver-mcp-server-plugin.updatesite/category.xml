@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/io.dbeaver.mcp.feature_0.1.6.qualifier.jar"
+            id="io.dbeaver.mcp.feature"
+            version="0.1.6.qualifier">
+      <category name="dbeaver-mcp"/>
+   </feature>
+   <category-def name="dbeaver-mcp" label="DBeaver MCP Server">
+      <description>
+         MCP HTTP server for controlled AI-agent access to already-open DBeaver connections.
+      </description>
+   </category-def>
+</site>

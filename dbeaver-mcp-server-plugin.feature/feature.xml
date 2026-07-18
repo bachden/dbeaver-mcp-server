@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="io.dbeaver.mcp.feature"
+      label="DBeaver MCP Server"
+      version="0.1.6.qualifier"
+      provider-name="Bach Nguyen">
+
+   <description>
+      Runs an MCP HTTP server inside DBeaver and exposes already-open database connections
+      to trusted AI agents.
+   </description>
+
+   <copyright>
+      Bach Nguyen
+   </copyright>
+
+   <license url="">
+      No license specified.
+   </license>
+
+   <requires>
+      <import plugin="org.jkiss.dbeaver.model" version="2.0.0" match="greaterOrEqual"/>
+   </requires>
+
+   <plugin
+         id="dbeaver-mcp-server-plugin"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>
