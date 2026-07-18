@@ -112,8 +112,7 @@ The modules are:
 
 Requirements:
 
-- DBeaver Ultimate 26.x installed at
-  `/Applications/DBeaverUltimate.app/Contents/Eclipse`.
+- DBeaver 23+ installed.
 - Java 21.
 - Eclipse IDE with PDE and m2e.
 - Maven 3.9 or newer.
