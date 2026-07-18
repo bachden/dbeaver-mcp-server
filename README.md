@@ -122,7 +122,7 @@ Eclipse will discover the four reactor projects.
 
 Open `dbeaver-mcp-server-plugin/dbeaver.target`, select
 **Set as Active Target Platform**, and wait for PDE to finish resolving it. This
-target uses the DBeaver Ultimate installation on macOS. CI uses
+target uses the DBeaver installation on macOS. CI uses
 `dbeaver-ci.target` and public p2 repositories instead.
 
 ## Build The p2 Update Site
@@ -191,7 +191,7 @@ same version has been reinstalled, close DBeaver completely and run it once
 with:
 
 ```bash
-/Applications/DBeaverUltimate.app/Contents/MacOS/dbeaver -clean
+/Applications/DBeaver.app/Contents/MacOS/dbeaver -clean
 ```
 
 DBeaver can be started normally after that one clean launch.
