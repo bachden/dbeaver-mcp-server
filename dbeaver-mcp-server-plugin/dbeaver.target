@@ -2,6 +2,6 @@
 <?pde version="3.8"?>
 <target name="DBeaver Ultimate Target" sequenceNumber="1">
 	<locations>
-		<location path="/Applications/DBeaverUltimate.app/Contents/Eclipse" type="Directory"/>
+		<location path="/Applications/DBeaver.app/Contents/Eclipse" type="Directory"/>
 	</locations>
 </target>
