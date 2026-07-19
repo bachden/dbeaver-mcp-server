@@ -49,6 +49,12 @@ The plugin follows a **what you see is what you get** rule:
 
 All three database-access tools reject closed connections.
 
+`run_query` and `execute_sql` accept an optional `showOnUi` boolean
+(default `false`). When it is `true`, the statement executes once through a
+visible DBeaver SQL editor: its result appears in the DBeaver result grid and
+the same data is returned to the MCP caller. DBeaver's normal execution
+confirmations remain active, and the connection must already be open.
+
 ## Server And UI
 
 The default endpoint is:

@@ -54,4 +54,11 @@ final class Schemas {
         }
         return args.get(name).getAsInt();
     }
+
+    static boolean optBoolean(JsonObject args, String name, boolean fallback) {
+        if (args == null || !args.has(name) || args.get(name).isJsonNull()) {
+            return fallback;
+        }
+        return args.get(name).getAsBoolean();
+    }
 }

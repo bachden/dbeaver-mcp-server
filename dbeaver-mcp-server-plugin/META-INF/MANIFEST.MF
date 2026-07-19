@@ -14,5 +14,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.equinox.preferences,
  org.eclipse.swt,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.ui.editors.sql,
  com.google.gson
 Import-Package: com.sun.net.httpserver

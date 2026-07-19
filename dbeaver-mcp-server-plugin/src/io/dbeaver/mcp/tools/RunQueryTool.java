@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 
 import io.dbeaver.mcp.db.DBeaverConnections;
 import io.dbeaver.mcp.db.SqlRunner;
+import io.dbeaver.mcp.db.UiSqlRunner;
 import io.dbeaver.mcp.mcp.McpTool;
 
 /**
@@ -35,6 +36,8 @@ public class RunQueryTool implements McpTool {
         Schemas.prop(schema, "connectionId", "string", "The connection id from list_connections.");
         Schemas.prop(schema, "sql", "string", "A read-only SQL statement.");
         Schemas.prop(schema, "maxRows", "integer", "Maximum rows to return (default " + DEFAULT_MAX_ROWS + ").");
+        Schemas.prop(schema, "showOnUi", "boolean",
+                "Also execute in a visible DBeaver SQL editor and show its result grid (default false).");
         return Schemas.required(schema, "connectionId", "sql");
     }
 
@@ -43,6 +46,7 @@ public class RunQueryTool implements McpTool {
         String connectionId = Schemas.requireString(arguments, "connectionId");
         String sql = Schemas.requireString(arguments, "sql");
         int maxRows = Schemas.optInt(arguments, "maxRows", DEFAULT_MAX_ROWS);
+        boolean showOnUi = Schemas.optBoolean(arguments, "showOnUi", false);
 
         if (!isReadOnly(sql)) {
             throw new IllegalArgumentException(
@@ -54,7 +58,8 @@ public class RunQueryTool implements McpTool {
         if (container == null) {
             throw new IllegalArgumentException("Unknown connectionId: " + connectionId);
         }
-        JsonObject result = SqlRunner.query(container, sql, maxRows);
+        JsonObject result = showOnUi ? UiSqlRunner.query(container, sql, maxRows)
+                : SqlRunner.query(container, sql, maxRows);
         return new GsonBuilder().setPrettyPrinting().create().toJson(result);
     }
 

@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -36,6 +37,9 @@ public final class SqlRunner {
     public static JsonObject query(DBPDataSourceContainer container, String sql, int maxRows) throws Exception {
         DBRProgressMonitor monitor = new VoidProgressMonitor();
         DBPDataSource dataSource = DBeaverConnections.requireOpen(container);
+        if (maxRows <= 0) {
+            throw new IllegalArgumentException("maxRows must be greater than zero");
+        }
         DBCExecutionContext context = dataSource.getDefaultInstance().getDefaultContext(monitor, false);
 
         JsonObject out = new JsonObject();
@@ -89,7 +93,7 @@ public final class SqlRunner {
         return out;
     }
 
-    private static com.google.gson.JsonElement toJson(Object value) {
+    static JsonElement toJson(Object value) {
         if (value == null) {
             return JsonNull.INSTANCE;
         }
