@@ -39,13 +39,18 @@ public final class McpConfigGenerator {
                             + "\""
                     : "claude mcp add --transport http dbeaver " + url;
         case CLAUDE_DESKTOP:
+            // Claude Desktop has no native "http" transport type; bridge via mcp-remote
+            // (spawned over stdio) instead of the raw HTTP block Claude Code accepts.
             return withAuth
-                    ? "{\n" + "  \"mcpServers\": {\n" + "    \"dbeaver\": {\n" + "      \"type\": \"http\",\n"
-                            + "      \"url\": \"" + url + "\",\n" + "      \"headers\": {\n"
-                            + "        \"Authorization\": \"Bearer " + token + "\"\n" + "      }\n" + "    }\n"
+                    ? "{\n" + "  \"mcpServers\": {\n" + "    \"dbeaver\": {\n"
+                            + "      \"command\": \"npx\",\n" + "      \"args\": [\n" + "        \"-y\",\n"
+                            + "        \"mcp-remote\",\n" + "        \"" + url + "\",\n"
+                            + "        \"--header\",\n"
+                            + "        \"Authorization: Bearer " + token + "\"\n" + "      ]\n" + "    }\n"
                             + "  }\n" + "}"
-                    : "{\n" + "  \"mcpServers\": {\n" + "    \"dbeaver\": {\n" + "      \"type\": \"http\",\n"
-                            + "      \"url\": \"" + url + "\"\n" + "    }\n" + "  }\n" + "}";
+                    : "{\n" + "  \"mcpServers\": {\n" + "    \"dbeaver\": {\n" + "      \"command\": \"npx\",\n"
+                            + "      \"args\": [\n" + "        \"-y\",\n" + "        \"mcp-remote\",\n"
+                            + "        \"" + url + "\"\n" + "      ]\n" + "    }\n" + "  }\n" + "}";
         case CODEX_CLI:
             return withAuth
                     ? "[mcp_servers.dbeaver]\n" + "url = \"" + url + "\"\n" + "[mcp_servers.dbeaver.headers]\n"
