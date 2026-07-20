@@ -12,7 +12,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho-version>5.0.3</tycho-version>
-    <target-definition>dbeaver.target</target-definition>
+    <target-definition>dbeaver-ci.target</target-definition>
   </properties>
 
   <modules>

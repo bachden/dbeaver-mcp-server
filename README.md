@@ -95,7 +95,6 @@ dbeaver-mcp-server-plugin-parent
 ├── dbeaver-mcp-server-plugin
 │   ├── META-INF/MANIFEST.MF
 │   ├── plugin.xml
-│   ├── dbeaver.target
 │   ├── dbeaver-ci.target
 │   ├── pom.xml
 │   └── src/
@@ -126,10 +125,10 @@ Requirements:
 Import the repository root with **File -> Import -> Existing Maven Projects**.
 Eclipse will discover the four reactor projects.
 
-Open `dbeaver-mcp-server-plugin/dbeaver.target`, select
+Open `dbeaver-mcp-server-plugin/dbeaver-ci.target`, select
 **Set as Active Target Platform**, and wait for PDE to finish resolving it. This
-target uses the DBeaver installation on macOS. CI uses
-`dbeaver-ci.target` and public p2 repositories instead.
+is the same public p2 target definition consumed by Tycho and GitHub Actions.
+No local DBeaver installation path is part of the build.
 
 ## Build The p2 Update Site
 
@@ -151,14 +150,8 @@ dist/
 └── p2.index
 ```
 
-To run the portable build used by GitHub Actions:
-
-```bash
-mvn --batch-mode --update-snapshots \
-  -Dtarget-definition=dbeaver-ci.target \
-  clean verify
-```
-
+GitHub Actions runs the same `mvn clean verify` command and uses
+`dbeaver-ci.target` through the parent POM.
 `dist/` is the stable local update-site location. Each build replaces the
 `0.1.6.qualifier` qualifier with a timestamp so p2 can identify a new update.
 
@@ -207,7 +200,7 @@ DBeaver can be started normally after that one clean launch.
 The repository contains two workflows:
 
 - **Build and Publish DBeaver Update Site** runs on pushes to `main`, builds
-  with `dbeaver-ci.target`, and deploys `dist/` to GitHub Pages.
+  with the shared `dbeaver-ci.target`, and deploys `dist/` to GitHub Pages.
 - **Validate DBeaver Update Site** runs for pull requests and uploads `dist/`
   as a build artifact.
 
