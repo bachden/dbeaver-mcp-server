@@ -237,7 +237,7 @@ Codex CLI example:
 [mcp_servers.dbeaver]
 url = "http://127.0.0.1:8722/mcp"
 
-[mcp_servers.dbeaver.headers]
+[mcp_servers.dbeaver.http_headers]
 Authorization = "Bearer <token>"
 ```
 

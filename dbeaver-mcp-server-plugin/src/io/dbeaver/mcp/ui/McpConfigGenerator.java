@@ -53,7 +53,7 @@ public final class McpConfigGenerator {
                             + "        \"" + url + "\"\n" + "      ]\n" + "    }\n" + "  }\n" + "}";
         case CODEX_CLI:
             return withAuth
-                    ? "[mcp_servers.dbeaver]\n" + "url = \"" + url + "\"\n" + "[mcp_servers.dbeaver.headers]\n"
+                    ? "[mcp_servers.dbeaver]\n" + "url = \"" + url + "\"\n" + "[mcp_servers.dbeaver.http_headers]\n"
                             + "Authorization = \"Bearer " + token + "\""
                     : "[mcp_servers.dbeaver]\n" + "url = \"" + url + "\"";
         case RAW_URL:
