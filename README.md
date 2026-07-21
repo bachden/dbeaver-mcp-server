@@ -49,6 +49,11 @@ The plugin follows a **what you see is what you get** rule:
 
 All three database-access tools reject closed connections.
 
+`list_connections` accepts an optional `name` filter. The default
+`nameMode: "ilike"` supports SQL-style `%` and `_` wildcards with
+case-insensitive matching. Set `nameMode: "regex"` to use a Java regular
+expression with substring matching.
+
 `run_query` and `execute_sql` accept an optional `showOnUi` boolean
 (default `false`). When it is `true`, the statement executes once through a
 visible DBeaver SQL editor: its result appears in the DBeaver result grid and
