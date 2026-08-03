@@ -59,11 +59,16 @@ public class McpHttpServer {
         try {
             httpServer = HttpServer.create(new InetSocketAddress(host, port), 0);
             httpServer.createContext(PATH, new McpHandler());
-            httpServer.setExecutor(Executors.newFixedThreadPool(4));
+            // One virtual thread per HTTP request: cheap to spawn, so a slow tools/call (blocked
+            // on the dispatcher's own timeout, or just legitimately slow) never starves other
+            // connections the way a small fixed pool would.
+            httpServer.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
             httpServer.start();
             boundHost = host;
-            boundPort = port;
-            log("MCP server listening on http://" + host + ":" + port + PATH);
+            // Re-read the actual bound port: when port == 0 (random mode) the OS
+            // picks one, and httpServer.getAddress() is the only place to learn it.
+            boundPort = httpServer.getAddress().getPort();
+            log("MCP server listening on http://" + host + ":" + boundPort + PATH);
         } catch (IOException e) {
             httpServer = null;
             log("Failed to start MCP server on " + host + ":" + port + ": " + e.getMessage());
@@ -75,6 +80,7 @@ public class McpHttpServer {
         if (httpServer != null) {
             httpServer.stop(0);
             httpServer = null;
+            dispatcher.shutdown();
             log("MCP server stopped");
         }
     }
@@ -157,8 +163,11 @@ public class McpHttpServer {
                 for (JsonElement element : parsed.getAsJsonArray()) {
                     if (element.isJsonObject()) {
                         JsonObject requestObj = element.getAsJsonObject();
+                        long start = System.nanoTime();
                         JsonObject response = dispatcher.dispatch(requestObj);
-                        connectionLog.record(remote, describe(requestObj), true);
+                        long durationMillis = (System.nanoTime() - start) / 1_000_000;
+                        connectionLog.record(remote, describe(requestObj), true, durationMillis,
+                                gson.toJson(requestObj), response != null ? gson.toJson(response) : null);
                         if (response != null) {
                             responses.add(response);
                         }
@@ -179,8 +188,11 @@ public class McpHttpServer {
             }
 
             JsonObject requestObj = parsed.getAsJsonObject();
+            long start = System.nanoTime();
             JsonObject response = dispatcher.dispatch(requestObj);
-            connectionLog.record(remote, describe(requestObj), true);
+            long durationMillis = (System.nanoTime() - start) / 1_000_000;
+            connectionLog.record(remote, describe(requestObj), true, durationMillis, gson.toJson(requestObj),
+                    response != null ? gson.toJson(response) : null);
             if (response == null) {
                 // Notification — acknowledge with no content.
                 exchange.sendResponseHeaders(202, -1);

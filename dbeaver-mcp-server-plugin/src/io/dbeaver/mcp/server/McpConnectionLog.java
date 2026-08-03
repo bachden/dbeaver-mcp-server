@@ -13,28 +13,81 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  */
 public class McpConnectionLog {
 
-    /** One recorded connection attempt. */
+    /**
+     * One recorded connection attempt.
+     * <p>
+     * {@code equals()}/{@code hashCode()} are based on {@code timestamp} alone: entries are
+     * immutable and append-only, so it uniquely identifies one — this lets UI code (e.g. a
+     * {@code TreeViewer}) recognise "the same" entry across snapshots returned by separate
+     * {@link #recent()} calls, whose elements are otherwise different object instances, and so
+     * restore per-entry UI state (selection, expansion) across a refresh.
+     */
     public static final class Entry {
         public final Instant timestamp;
         public final String remoteAddress;
         public final String detail;
         public final boolean success;
+        /** Wall-clock time to handle the request, in milliseconds; -1 if not measured. */
+        public final long durationMillis;
+        /** Raw JSON-RPC request body, for inspection in the UI; null if not captured. */
+        public final String requestJson;
+        /** Raw JSON-RPC response body, for inspection in the UI; null for notifications or failures. */
+        public final String responseJson;
 
-        Entry(Instant timestamp, String remoteAddress, String detail, boolean success) {
+        Entry(Instant timestamp, String remoteAddress, String detail, boolean success, long durationMillis,
+                String requestJson, String responseJson) {
             this.timestamp = timestamp;
             this.remoteAddress = remoteAddress;
             this.detail = detail;
             this.success = success;
+            this.durationMillis = durationMillis;
+            this.requestJson = requestJson;
+            this.responseJson = responseJson;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Entry other && timestamp.equals(other.timestamp);
+        }
+
+        @Override
+        public int hashCode() {
+            return timestamp.hashCode();
         }
     }
 
-    private static final int MAX_ENTRIES = 200;
+    public static final int DEFAULT_MAX_ENTRIES = 100;
 
     private final Deque<Entry> entries = new ConcurrentLinkedDeque<>();
+    private volatile int maxEntries = DEFAULT_MAX_ENTRIES;
+
+    /** Sets how many recent entries to retain; trims the log immediately if it now exceeds this. */
+    public void setMaxEntries(int maxEntries) {
+        this.maxEntries = Math.max(1, maxEntries);
+        trim();
+    }
+
+    public int getMaxEntries() {
+        return maxEntries;
+    }
 
     public void record(String remoteAddress, String detail, boolean success) {
-        entries.addLast(new Entry(Instant.now(), remoteAddress, detail, success));
-        while (entries.size() > MAX_ENTRIES) {
+        record(remoteAddress, detail, success, -1, null, null);
+    }
+
+    public void record(String remoteAddress, String detail, boolean success, long durationMillis) {
+        record(remoteAddress, detail, success, durationMillis, null, null);
+    }
+
+    public void record(String remoteAddress, String detail, boolean success, long durationMillis,
+            String requestJson, String responseJson) {
+        entries.addLast(
+                new Entry(Instant.now(), remoteAddress, detail, success, durationMillis, requestJson, responseJson));
+        trim();
+    }
+
+    private void trim() {
+        while (entries.size() > maxEntries) {
             entries.pollFirst();
         }
     }
